@@ -1,0 +1,829 @@
+<!-- 
+    Author: Pankaj Agrahari 
+    Email: salesforceblue@gmail.com  
+--> 
+
+<apex:page Controller="race_wars" applyBodyTag="true" showHeader="false" applyHtmlTag="false" standardStylesheets="false">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+      
+    
+    <script>
+    var flagDirection = 'right'; 
+    var isGameOver = true;
+    var toggleLeft = "20%";
+    var score = 0;
+    var level = 20;
+    var racerId = '';
+     
+    $(document).ready(function(){
+        
+        // Initializing dynamic css.
+            $("#race_arena").css(
+                {"height": $(window).height(),
+                 "width" : $(window).width(),
+                 "background-color": "#cacaca",
+                 "float" : "left",
+                 
+                }
+            );
+        
+            $("#stripCont2").css({
+                // "background-color" : "yellow",
+                "height" : "100%",
+                "position": "relative",
+                "overflow": "hidden",
+                "top": - $(window).height() * 2 
+            });
+            
+        // Setting Game Controls :
+        
+        $(document).keydown(function(e){
+              
+            if(!isGameOver){
+                switch(e.which){
+                case 37 : //left
+                        console.log('left');
+                        if(flagDirection == 'right'){
+                            $("#racerX").animate({
+                               left : "-=50%"
+                                //right : "-=50%"
+                         
+                            }, 200);
+                            flagDirection = 'left'
+                        }
+                            
+                        break;
+                     
+                case 39 :   //  right
+                        console.log('right');
+                        if(flagDirection == 'left'){
+                            $("#racerX").animate({
+                                //right : "+=30%"
+                                //right : "+=50%"
+                                left : "+=50%"
+                            }, 200);
+                            flagDirection = 'right'
+                        }
+                            
+                        break;
+                    
+             default : return;      
+                    
+                    
+            }
+            
+                 e.preventDefault(); // Prevent the default action.
+                
+            }
+            
+     
+        });
+          
+        
+        $("#btn_pause").show();
+        
+        $("#btn_play").show();
+        
+      });
+        
+    // game begins from here.   
+      var startGame = function(){
+          isGameOver = false;
+          animateTraffic();         
+          animateRaceTrack();
+                  
+      }
+    
+    //  Animating Traffic
+      var animateTraffic = function(){
+          
+      var trafficSpeed = level;
+          if(!isGameOver){ // preventing callback function to execute again if game over.
+                           // Stop animation can also do the same trick. Check this.
+                           // Only stop animation wasn't working as animation were getting stop but
+                           // other animation callback function were again invoking it.
+                
+              // scoring 
+                increaseScore();
+                
+               // resetting the car.
+                    if($("#traffic_car1").position().top > $(window).height()){
+                        // initialize style
+                        $("#traffic_car1").css({
+                            "top" : "-=" + ($(window).height() * 2 ) 
+                        
+                        });
+                        
+                        
+                    }
+                    else if($("#traffic_car2").position().top > $(window).height()){
+                       $("#traffic_car2").css({
+                            "top" : "-=" + ($(window).height() * 2 )
+                            
+                        
+                        });
+
+                    }
+                    else if($("#traffic_car3").position().top > $(window).height()){
+                       $("#traffic_car3").css({
+                            "top" : "-=" + ($(window).height() * 2 )
+                        
+                        });
+                    }
+                    else if($("#traffic_car4").position().top > $(window).height()){
+                        $("#traffic_car4").css({
+                            "top" : "-=" + ($(window).height() * 2 ),
+                            "left" : getLocation()
+                        
+                     });
+                    }
+                
+                    if($("#traffic_car1_T").position().top > $(window).height()){
+                        $("#traffic_car1_T").css({
+                            "top" : "-=" + ($(window).height() * 2 ),
+                            "left" : getLocation()                         
+                        });
+                    }
+                    else if($("#traffic_car2_T").position().top > $(window).height()){
+                        $("#traffic_car2_T").css({
+                            "top" : "-=" + ($(window).height() * 2 )
+                        
+                        });
+                    }
+                    else if($("#traffic_car3_T").position().top > $(window).height()){
+                        $("#traffic_car3_T").css({
+                            "top" : "-=" + ($(window).height() * 2 )
+                        
+                        });
+                    }
+                    else if($("#traffic_car4_T").position().top > $(window).height()){
+                        $("#traffic_car4_T").css({
+                            "top" : "-=" + ($(window).height() * 2 ),
+                             "left" : getLocation()
+                        
+                        });
+                    }
+                
+                 
+                
+                // animate the cars. 
+                // Since all the cars have to move all together
+                // so each callback to animateTraffic animate all the cars.
+                    $("#traffic_car1").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                     $("#traffic_car2").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                    $("#traffic_car3").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                
+                     $("#traffic_car4").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                
+                     $("#traffic_car1_T").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                     $("#traffic_car2_T").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                    $("#traffic_car3_T").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                
+                     $("#traffic_car4_T").animate({
+                        top : '+=7px'
+                        
+                         },
+                         trafficSpeed,
+                         'linear',
+                         function(){checkCrash(this); animateTraffic()}
+                     );
+                
+                    
+                
+                }
+          
+      }  
+    
+   // Randomly set car left and right position  
+    var getLocation = function(){
+        
+        if(Math.round((Math.random() * 10)) % 2 == 0){
+            toggleLeft = "20%";
+         }
+        else{
+            toggleLeft = "65%";
+        }
+        
+        return toggleLeft;
+    }  
+      
+    // Animating RaceTrack
+      var animateRaceTrack = function(){
+          var trackSpeed = level; 
+          
+          // Resetting the Track if goes at the bottom of the window.
+                if($("#stripCont1").position().top > $(window).height()){
+                   $("#stripCont1").css({
+                    "top": -$(window).height() + 10,
+                    "height" : "100%",
+                    "position": "relative", 
+                    "overflow": "hidden"
+                     });
+                    
+                    
+                }
+                else if($("#stripCont2").position().top > $(window).height()){
+                  $("#stripCont2").css({
+                      "top": - $(window).height() * 2 + 10,
+                      "height" : "100%",
+                      "position": "relative",
+                      "overflow": "hidden"
+                   })
+                 
+                }   
+            
+          // Animating the Race Track.                               
+                $("#stripCont1").animate({
+                        top : '+=10px'
+                        
+                    }, trackSpeed,'linear', function(){animateRaceTrack()});
+                    
+                $("#stripCont2").animate({
+                        top : '+=10px'
+                         },
+                         trackSpeed,
+                         'linear',
+                         function(){animateRaceTrack()}
+                 );
+         
+            }         
+    
+   //   Checking Crash.
+      
+      var checkCrash = function(car) {
+            
+          var tc_l = $(car).position().left;
+          var tc_t = $(car).position().top;
+          var tc_r = tc_l + $(car).width();
+          var tc_b = tc_t + $(car).height();
+          
+          var rx_l = $("#racerX").position().left;
+          var rx_t = $("#racerX").position().top;
+          var rx_r = rx_l + $("#racerX").width();
+          var rx_b = rx_t + $("#racerX").height();
+          
+          
+          if( (tc_b >= rx_t && tc_b <= rx_b) && ((rx_l <= tc_r && rx_l >= tc_l) || (rx_r >= tc_l && rx_l <= tc_r)) ||
+              
+              (tc_t >= rx_t && tc_t <= rx_b) && ((rx_l <= tc_r && rx_l >= tc_l) || (rx_r >= tc_l && rx_l <= tc_r))
+             
+            
+            ){
+              console.log("game Over");
+              console.log("\n" +
+               "Traffic Cars ------" + 
+               "\n top : " + tc_t +
+               " \n bottom : " + tc_b +
+               " \n left : " + tc_l +
+               " \n right : " + tc_r);
+              
+              console.log("\n" +
+               "Racer X ------" + 
+               "\n top : " + rx_t +
+               " \n bottom : " + rx_b +
+               " \n left : " + rx_l +
+               " \n right : " + rx_r);
+            
+              $(car).animate({}
+                
+              ,function(){
+                  $(this).css('-webkit-transform','rotate(45deg)'); 
+                  $("#racerX").css('-webkit-transform','rotate(-45deg)'); 
+                  gameOver();
+              
+              });
+             
+          }
+          
+      } 
+      
+   // Game Over Method + update Score call
+    var gameOver = function(){
+        isGameOver = true;
+        $("#racerX").clearQueue().stop();
+        $("#stripCont1").clearQueue().stop();    
+        $("#stripCont2").clearQueue().stop();    
+        
+        $("#traffic_car1").clearQueue().stop();    
+        $("#traffic_car2").clearQueue().stop();   
+        $("#traffic_car3").clearQueue().stop();    
+        $("#traffic_car4").clearQueue().stop();    
+          
+        $("#traffic_car1_T").clearQueue().stop();    
+        $("#traffic_car2_T").clearQueue().stop();   
+        $("#traffic_car3_T").clearQueue().stop();    
+        $("#traffic_car4_T").clearQueue().stop();    
+        
+        
+        $("#btn_restart").show();
+        $("#btn_play").hide();
+        $("#btn_pause").hide();
+        
+        
+        console.log('score ---- : ' + score);
+        console.log('RacerId ----- : ' + racerId);
+        updateScore(score, racerId);
+    }
+   
+    // Game Pause method 
+     var pauseGame = function(){
+        $("#racerX").clearQueue().stop();
+        $("#stripCont1").clearQueue().stop();    
+        $("#stripCont2").clearQueue().stop();    
+        
+        $("#traffic_car1").clearQueue().stop();    
+        $("#traffic_car2").clearQueue().stop();   
+        $("#traffic_car3").clearQueue().stop();    
+        $("#traffic_car4").clearQueue().stop();    
+          
+        $("#traffic_car1_T").clearQueue().stop();    
+        $("#traffic_car2_T").clearQueue().stop();   
+        $("#traffic_car3_T").clearQueue().stop();    
+        $("#traffic_car4_T").clearQueue().stop();    
+         
+    }
+    
+     // Restart game 
+     var restart = function(){
+        window.location.reload();
+    }
+
+     // Increment score
+     var increaseScore = function(){
+        document.getElementById("scoreText").innerHTML = ++score;
+         
+        if(score > 150 && level != 1) {
+            level = 1;
+            console.log('level changed to hard'); 
+        }
+     }
+    
+     // save user info
+    var saveRecord = function(){
+            var playerName = document.getElementById("{!$Component.userForm.racerName}").value;
+        
+            if(playerName == '' || playerName == null){
+                alert('Please Give Your Name');
+                return false;
+            }
+            console.log('playerName' + playerName);
+            console.log("saving ");
+        
+            Visualforce.remoting.Manager.invokeAction(
+            '{!$RemoteAction.race_wars.save}',
+                playerName,
+             function(result, event){
+             
+                 if (event.status) {
+                     
+                     racerId = result;
+                     console.log('racerID ' + racerId);
+                } else if (event.type === 'exception') {
+                    alert("Unable to create player exception"); 
+                } else {
+                    alert(event.message);
+                }
+                
+            }, 
+            {escape: true}
+        );
+        
+        $("#userInputDiv").hide();
+        
+        startGame();
+        return false;
+    }
+       
+    </script>
+   
+    <style>
+        #race_track{
+            background-color : black;
+            height : 100%;
+            width  : 10%;
+            float : left;   
+            position : relative;
+            overflow : hidden;
+            border-left : solid #fff 2px;
+            border-right : solid #fff 2px;
+            box-sizing: border-box;
+        }
+        
+        
+        #racerX{
+            
+            background-image : url("{!$Resource.racerX_car}"); 
+            background-size : 100% 100%;
+            height : 5%;
+            width : 20px;
+            position: absolute;
+            bottom : 10%;
+            right : 20%;
+            box-shadow : #cacaca 2px;
+        }
+         
+        #left_pane{
+            background-color : #36a847;
+            width : 45%;
+            height : 100%;
+            float : left;
+        } 
+       
+        #right_pane{
+            background-color : #36a847;
+            width : 45%;
+            height : 100%;
+            float : left;
+        }
+        
+        .strip{
+            background-color : #fff;
+            width : 2px;
+            height : 10%;
+            margin : 20% auto;                  
+        }
+        
+               
+        #stripCont1{
+        /*background-color : green;*/
+            height : 100%;
+            position: relative; 
+            overflow: hidden;
+        }
+        
+        #traffic_car1{
+            position : absolute; 
+            top : 15%;
+            right : 20%;
+            height : 5%;
+            width : 20px;
+
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        
+        }
+        
+        #traffic_car2{
+            position : absolute; 
+            top : 30%;
+            left : 20%;
+            height : 5%;
+            width : 20px;
+            
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        
+        }
+        
+        #traffic_car3{
+            position : absolute; 
+            top : 45%;
+            right : 20%;
+            height : 5%;
+            width : 20px;
+            
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        
+        }
+        
+        #traffic_car4{
+            position : absolute; 
+            top : 60%; 
+            left : 20%;
+            height : 5%;
+            width : 20px;
+        
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        
+        }
+        
+        #traffic_car1_T{
+            position : absolute; 
+            top : -15%;
+            right : 20%;
+            height : 5%;
+            width : 20px;
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        }
+        
+        #traffic_car2_T{
+            position : absolute; 
+            top : -30%;
+            left : 20%;
+            height : 5%;
+            width : 20px;
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        }
+        
+        #traffic_car3_T{
+            position : absolute; 
+            top : -45%;
+            right : 20%;
+            height : 5%;
+            width : 20px;
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        }
+        
+        #traffic_car4_T{
+            position : absolute; 
+            top : -60%; 
+            left : 20%;
+            height : 5%;
+            width : 20px;
+            background-image : url("{!$Resource.traffic_car}"); 
+            background-size : 100% 100%;
+        }
+        
+                
+        .btn{
+            padding : 5px;
+            background-color : #000000;
+            color : #fff;
+            box-shadow: 1px 1px 1px #000000
+            text-shadow : 2px 2px 2px #cacaca;
+            font-weight : bold;
+            float : right;
+            cursor : pointer;
+            display : none; 
+        }
+
+        #btn_restart{
+            display : none;
+        }
+
+        body{
+            margin : 0;
+        }
+        
+        #score_holder{
+            text-align : center;
+            
+        }
+        
+        #gameControl_ToolBar{
+            height : 50%;
+        }
+        
+        #scoreText{
+            font-size: 40px;
+            font-weight: bold;
+            color: #900000;
+            text-shadow: 1px 1px 1px #c8c8c8; 
+        }
+        
+        #userInputDiv{
+            height : 100%;
+            width : 100%;
+            position: absolute;
+            background-color : rgba(45, 30, 30, 0.37);
+        
+        }
+        
+        .lbl_racer_Name{
+            color : #fff;
+            margin-right : 10%;
+            font-weight : bold;
+            text-shadow: 2px 2px #000000;   
+        }
+        
+        .inp_racer_Name{
+            padding : 2px;
+            font-size: 1.5rem;
+            color: #900000;
+            text-align: conter;
+        }
+        
+        .form_userInput_Div{
+            margin : 10% auto;  
+            width : 50%;
+            
+        }
+        
+        .btn_play{
+            margin-top: 3px;
+            padding: 3px;
+            width: 100%;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color:#fff;
+            background: #900000
+        }
+         
+        #leaderBoard_div{
+            height : 100%;
+        }
+        
+        #leaderBoard_Header{
+            padding: 1%;
+            text-align: center;
+            background-color: rgba(49, 60, 51, 0.13);
+            font-size: 2rem;
+            text-shadow: 1px 1px 1px #868686;
+            color: #900000;
+        }
+          
+        
+        .leaderBoardDisplay{
+            height : 100%;
+            width : 80%;
+            text-align : center;
+            font-size : .9rem;
+            /* text-shadow: 1px 1px 1px #868686; */
+            color : #900000;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .gameControlInfo{
+            color: #fff; 
+            position: absolute;
+            font-size: .9rem;
+            bottom: 5px;
+            padding: 20px;
+            text-shadow: 1px 1px 1px black;
+
+        }
+       
+        #leaderBoard_Display {
+            margin-top: 2rem;
+        }
+    </style>
+        
+     
+    <div id = "race_arena" >
+        <div id = "left_pane">
+           <div id = "leaderBoard_div">
+               <div id = "leaderBoard_Header">
+                   Leaderboard:
+               </div>
+               
+               <div id = "leaderBoard_Display">
+                   <apex:dataTable value="{!ls_top_racers}" var="racer" styleClass="leaderBoardDisplay" id="dt_leaderBoard"> 
+                       <apex:column value="{!racer.name}" headerValue=""/>
+                       <apex:column value="{!racer.Score__c}" headerValue=""/>
+                   </apex:dataTable>
+               </div>
+            </div>
+        </div>
+        
+        <div id = "race_track">
+            <div id = "stripCont1">
+                <div class = "strip">
+                </div>
+                
+                <div class = "strip"> 
+                </div>
+                
+                <div class = "strip">
+                </div> 
+                    
+                <div class = "strip">
+                </div>     
+              <div class = "strip">
+                
+            </div> 
+ 
+            </div>    
+
+            <div id = "stripCont2">
+                   <div class = "strip">
+                       
+                   </div>
+                   
+                   <div class = "strip"> 
+                       
+                   </div>
+                   
+                   <div class = "strip">
+                       
+                   </div> 
+                   
+                   <div class = "strip">
+                       
+                   </div>     
+                   
+                   <div class = "strip">
+                       
+                   </div> 
+                   
+            </div>   
+            
+            <div id = "racerX">
+            </div>
+            
+            <div id = "traffic_car1"></div>
+            <div id = "traffic_car2"></div>
+            <div id = "traffic_car3"></div>
+            <div id = "traffic_car4"></div>
+
+            <div id = "traffic_car1_T"></div>
+            <div id = "traffic_car2_T"></div>
+            <div id = "traffic_car3_T"></div>
+            <div id = "traffic_car4_T"></div>
+    </div>
+    
+    <div id = "right_pane">
+        <div id = "gameControl_ToolBar">
+            
+        <input type = "button" id = "btn_restart" class = "btn" onclick = "restart()" value = "Restart"/>   
+        <input type = "button" id = "btn_pause" class = "btn" onclick = "pauseGame()" value = "Pause"/>
+        <input type = "button" id = "btn_play" class = "btn" onclick = "startGame()" value = "Play"/>              
+            
+        </div>  
+        
+        <div id = "score_holder">
+            <span id = "scoreText">
+                 00000000
+            </span>
+          </div>
+        </div>
+    
+        <div id = "userInputDiv">
+          <div class = "form_userInput_Div">
+              <div style = "margin : 40% auto;width : 60%;">
+                    <apex:form styleClass="form_userInput" id="userForm"> 
+                          <table style="width: 370px; margin-left: 5rem;">
+                                <tr>
+                                    <td style="width: 100px;"><apex:outputLabel value="Racer Name:" for="racerName" styleClass="lbl_racer_Name"/></td>
+                                    <td><apex:inputText value="{!racer_name}" id="racerName" styleClass="inp_racer_Name"/></td>
+                                </tr>
+                                <tr style="padding: 20px;">
+                                    <td colspan="2">                        
+                                        <input type = "button" value = "Play" class = "btn_play" onclick = "saveRecord();"/>
+                                    </td>
+                                </tr>
+                            </table>      
+                        
+                        <apex:actionFunction name="updateScore" reRender="dt_leaderBoard" action="{!updateScore}" >
+                            <apex:param assignTo="{!score}" name="score" value=""/>
+                            <apex:param assignTo="{!racerId}" name="racerId" value=""/>
+                        </apex:actionFunction>
+                    </apex:form>           
+              </div>
+          </div>
+         
+          <div class='gameControlInfo'>
+            <span>Game Controls : Use left arrow and right arrow key to play</span>          </div>
+          </div>
+    </div>    
+</apex:page>
