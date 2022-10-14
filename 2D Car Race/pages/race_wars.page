@@ -14,6 +14,8 @@
     var score = 0;
     var level = 20;
     var racerId = '';
+    var counter = 3;
+    var isReStartQueryParamSet = false;
      
     $(document).ready(function(){
         
@@ -83,17 +85,82 @@
         $("#btn_pause").show();
         
         $("#btn_play").show();
+
+
+        validateReStart();
         
       });
         
     // game begins from here.   
-      var startGame = function(){
-          isGameOver = false;
-          animateTraffic();         
-          animateRaceTrack();
-                  
+      var startGame = function(){ // where is the invocation of start game has to be replaced with readySetGo();
+        isGameOver = false;
+        animateTraffic();         
+        animateRaceTrack();
+        hideCounter();
+        showScoring();
+        
       }
+
+
+    var validateReStart = function() {
+        var racerName = '{!$CurrentPage.parameters.racerName}';
+        racerId = '{!$CurrentPage.parameters.racerId}';
+
+        if(racerId) {
+            $('#userInputDiv').hide();
+            isReStartQueryParamSet = true;
+            readySetGo();    
+        }
+    }
+
+    // Letting the racer set for the race
+    var readySetGo = function() {
+
+        hideCursor();
+        showCounter();
+        var counterInterval = setInterval(function() {
+
+            if(counter === 1) {
+                document.getElementById("countdown").innerHTML = 'Go 🚘';
+                counter--;
+            }
+
+            else if(counter === 0) {
+                //clear intervalclearInterval
+                startGame();
+                clearInterval(counterInterval);
+                return;
+            }
+            else {
+                document.getElementById("countdown").innerHTML = --counter;
+            }
+        }, 800)
+    }
     
+    // show scoring
+    var showScoring = function() {
+        $('#scoreText').show();
+    }
+    // show counter
+    var showCounter = function() {
+        $('#countdown').show();
+    }
+
+    // hide Counter
+    var hideCounter = function() {
+        $('#countdown').hide();
+    }
+
+    // hide Cursor
+    var hideCursor = function() {
+        $('body').addClass('nocursor');
+    }
+
+    // show Cursor
+    var showCursor = function() {
+        $('body').removeClass('nocursor');
+    }
+
     //  Animating Traffic
       var animateTraffic = function(){
           
@@ -375,6 +442,7 @@
         $("#btn_play").hide();
         $("#btn_pause").hide();
         
+        showCursor();
         
         console.log('score ---- : ' + score);
         console.log('RacerId ----- : ' + racerId);
@@ -401,7 +469,13 @@
     
      // Restart game 
      var restart = function(){
-        window.location.reload();
+
+        if(!isReStartQueryParamSet) {
+            window.location.href = window.location + '?racerId='+racerId;
+        } else {
+            window.location.reload();
+        }
+        
     }
 
      // Increment score
@@ -446,7 +520,7 @@
         
         $("#userInputDiv").hide();
         
-        startGame();
+        readySetGo();
         return false;
     }
        
@@ -463,6 +537,16 @@
             border-left : solid #fff 2px;
             border-right : solid #fff 2px;
             box-sizing: border-box;
+        }
+
+        #counterWrapper {
+            position: absolute;
+            width: 100%;
+            height: 100px;
+            top: 300px;
+            text-align: center;
+            color: #fff;
+            font-size: 3.5rem;
         }
         
         
@@ -626,10 +710,20 @@
         }
         
         #scoreText{
-            font-size: 40px;
+            font-size: 3rem;
             font-weight: bold;
             color: #900000;
             text-shadow: 1px 1px 1px #c8c8c8; 
+            display: none;
+        }
+
+        #countdown {
+            font-size: 4.5rem;
+            font-weight: bold;
+            /* color: #900000; */
+            color: #fff;
+            text-shadow: 1px 1px 1px #c8c8c8; 
+            display: none;
         }
         
         #userInputDiv{
@@ -686,12 +780,12 @@
         
         .leaderBoardDisplay{
             height : 100%;
-            width : 80%;
+            width : 100%;
             text-align : center;
             font-size : .9rem;
             /* text-shadow: 1px 1px 1px #868686; */
-            color : #900000;
-            font-family: Arial, Helvetica, sans-serif;
+            color : black;
+            font-family: cursive, Helvetica, sans-serif;
         }
 
         .gameControlInfo{
@@ -706,6 +800,14 @@
        
         #leaderBoard_Display {
             margin-top: 2rem;
+        }
+
+        .nocursor {
+            cursor: none;
+        }
+
+        table.leaderBoardDisplay tr:first-child td {
+            font-size: 1.1rem;
         }
     </style>
         
@@ -780,6 +882,10 @@
             <div id = "traffic_car2_T"></div>
             <div id = "traffic_car3_T"></div>
             <div id = "traffic_car4_T"></div>
+
+            <div id="counterWrapper">
+                <span id = "countdown">3</span>
+            </div>
     </div>
     
     <div id = "right_pane">
@@ -787,7 +893,7 @@
             
         <input type = "button" id = "btn_restart" class = "btn" onclick = "restart()" value = "Restart"/>   
         <input type = "button" id = "btn_pause" class = "btn" onclick = "pauseGame()" value = "Pause"/>
-        <input type = "button" id = "btn_play" class = "btn" onclick = "startGame()" value = "Play"/>              
+        <input type = "button" id = "btn_play" class = "btn" onclick = "readySetGo()" value = "Play"/>              
             
         </div>  
         
@@ -795,8 +901,10 @@
             <span id = "scoreText">
                  00000000
             </span>
-          </div>
+            
+
         </div>
+    </div>
     
         <div id = "userInputDiv">
           <div class = "form_userInput_Div">
