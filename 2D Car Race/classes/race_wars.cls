@@ -27,21 +27,29 @@ global class race_wars {
             
             System.debug('Racer id setting confirmation --- > ' + racerId);
             return rw.id;
-        }
-        catch(DmlException e){
+        } catch(DmlException e){
             return 'failed' + e;
         }        
          
     }
     
     public static void updateScore(){
-        System.debug('Score ' + score);
-        System.debug('Racer ID ' + racerId);
+
+        try {
+            System.debug('Score ' + score);
+            System.debug('Racer ID ' + racerId);
+            if(String.isNotBlank(racerId) && String.isNotBlank(score)) {
+                RaceWars__c racer = [Select id, score__c from RaceWars__C where id = :racerId];
+                if(racer.score__c == null || Long.valueOf(score) > racer.score__c) {
+                    racer.Score__c = Long.valueOf(score);
+                    update racer;
+                    System.debug('Score Updated');
+                }
+            }
+        } catch(DmlException e){
+            System.debug('failed' + e);
+        } 
         
-        RaceWars__c racer = [Select id, score__c from RaceWars__C where id = :racerId];
-        racer.Score__c = Long.valueOf(score);
-        update racer;
         
-        System.debug('Score Updated');
     }
 }
