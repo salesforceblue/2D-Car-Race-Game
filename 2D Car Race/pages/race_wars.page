@@ -103,7 +103,6 @@
 
 
     var validateReStart = function() {
-        var racerName = '{!$CurrentPage.parameters.racerName}';
         racerId = '{!$CurrentPage.parameters.racerId}';
 
         if(racerId) {
